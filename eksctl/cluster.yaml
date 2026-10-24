@@ -1,0 +1,25 @@
+# Create:  eksctl create cluster -f eksctl/cluster.yaml   (~15-20 min)
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: two-tier-eks
+  region: ap-south-1          # Mumbai
+  # version: omit kela tar eksctl latest supported version vaparto
+iam:
+  withOIDC: true
+addons:
+  - name: vpc-cni
+  - name: coredns
+  - name: kube-proxy
+  - name: aws-ebs-csi-driver   # EBS volumes for MySQL
+    wellKnownPolicies:
+      ebsCSIController: true
+  - name: metrics-server       # for HPA
+managedNodeGroups:
+  - name: workers
+    instanceType: t3.medium
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 4
+    volumeSize: 30
+    privateNetworking: false

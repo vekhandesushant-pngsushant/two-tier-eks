@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+  namespace: two-tier
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }   # zero-downtime deploy
+  selector:
+    matchLabels: { app: web-app }
+  template:
+    metadata:
+      labels: { app: web-app, tier: web }
+    spec:
+      containers:
+        - name: web-app
+          image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/two-tier-app:APP_IMAGE_TAG   # Jenkins replaces this
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef: { name: app-config }
+          env:
+            - name: APP_VERSION
+              value: "APP_IMAGE_TAG"
+            - name: DB_NAME
+              valueFrom: { secretKeyRef: { name: mysql-secret, key: MYSQL_DATABASE } }
+            - name: DB_USER
+              valueFrom: { secretKeyRef: { name: mysql-secret, key: MYSQL_USER } }
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: mysql-secret, key: MYSQL_PASSWORD } }
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits:   { cpu: 300m, memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /health/ready, port: 3000 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 3000 }
+            initialDelaySeconds: 15
+            periodSeconds: 20

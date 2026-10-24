@@ -1,0 +1,13 @@
+# EBS gp3 StorageClass (needs aws-ebs-csi-driver addon - eksctl config mdhye included)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gp3
+provisioner: ebs.csi.aws.com
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+parameters:
+  type: gp3
+  fsType: ext4
+  encrypted: "true"

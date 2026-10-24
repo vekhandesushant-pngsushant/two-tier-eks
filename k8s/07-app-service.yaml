@@ -1,0 +1,12 @@
+# type LoadBalancer => AWS ELB automatically banto. Public URL milel.
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-app
+  namespace: two-tier
+spec:
+  type: LoadBalancer
+  selector: { app: web-app }
+  ports:
+    - port: 80
+      targetPort: 3000

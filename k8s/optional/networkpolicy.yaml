@@ -1,0 +1,19 @@
+# OPTIONAL: fakt web-app pods la MySQL var jaayla parvangi.
+# Requires NetworkPolicy support (VPC CNI network policy enabled, or Calico).
+# Apply manually:  kubectl apply -f k8s/optional/networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mysql-allow-app-only
+  namespace: two-tier
+spec:
+  podSelector:
+    matchLabels: { app: mysql }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: { app: web-app }
+      ports:
+        - protocol: TCP
+          port: 3306

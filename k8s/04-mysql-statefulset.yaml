@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: two-tier
+spec:
+  serviceName: mysql
+  replicas: 1                 # single-node MySQL (production sathi RDS / replication vichara kara)
+  selector:
+    matchLabels: { app: mysql }
+  template:
+    metadata:
+      labels: { app: mysql, tier: database }
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: mysql
+          image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/two-tier-db:DB_IMAGE_TAG   # Jenkins replaces this
+          ports:
+            - containerPort: 3306
+              name: mysql
+          envFrom:
+            - secretRef: { name: mysql-secret }
+          args: ["--default-authentication-plugin=mysql_native_password"]
+          resources:
+            requests: { cpu: 250m, memory: 512Mi }
+            limits:   { cpu: 500m, memory: 1Gi }
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h 127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD"]
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h 127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD"]
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+              subPath: mysql        # EBS chya lost+found folder pasun bachaav
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: gp3
+        resources:
+          requests:
+            storage: 10Gi

@@ -1,0 +1,5 @@
+node_modules/
+rendered/
+*.log
+.env
+k8s/02-secret.yaml
