@@ -6,4 +6,4 @@ CREATE TABLE IF NOT EXISTS tasks (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
-INSERT INTO tasks (title) VALUES ('Welcome! Deployed via Jenkins to EKS'), ('आपले स्वागत आहे!');
+INSERT INTO tasks (title) VALUES ('Welcome! Deployed two-tier-application via Jenkins + docker + EKS') ;

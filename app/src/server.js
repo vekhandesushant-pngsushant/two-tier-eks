@@ -7,10 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Liveness: is the Node process alive? (DB check nahi - DB down asel tar pod restart nako)
+
 app.get('/health', (req, res) => res.json({ status: 'UP' }));
 
-// Readiness: can we talk to the DB? (DB nasel tar traffic band)
+
 app.get('/health/ready', async (req, res) => {
   try {
     await pool.query('SELECT 1');

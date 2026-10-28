@@ -10,7 +10,7 @@ pipeline {
 
   environment {
     AWS_REGION     = 'ap-south-1'
-    AWS_ACCOUNT_ID = '946877383530'          // <-- TUMCHA 12-digit AWS account ID taka
+    AWS_ACCOUNT_ID = '946877383530'          
     CLUSTER_NAME   = 'two-tier-eks'
     NAMESPACE      = 'two-tier'
     ECR_REGISTRY   = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
@@ -22,7 +22,7 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        checkout scm        // Git cha code pull hoto
+        checkout scm        
         sh 'git log -1 --oneline'
         script {
           def sha = sh(returnStdout: true, script: 'git rev-parse --short=7 HEAD').trim()
@@ -37,7 +37,7 @@ pipeline {
 
     stage('Unit Test') {
       steps {
-        // Node install nasel tar pan chalel - temporary Node container vaparto
+        
         sh '''
           docker run --rm --user $(id -u):$(id -g) \
             -e npm_config_cache=/tmp/.npm -e HOME=/tmp \
@@ -58,8 +58,8 @@ pipeline {
 
     stage('Push to ECR') {
       steps {
-        // Option A (recommended): Jenkins EC2 la IAM Instance Profile - credentials nako.
-        // Option B: withCredentials([[$class:'AmazonWebServicesCredentialsBinding', credentialsId:'aws-creds']]) { ... }
+        
+        
         sh '''
           aws ecr get-login-password --region ${AWS_REGION} \
             | docker login --username AWS --password-stdin ${ECR_REGISTRY}
@@ -116,7 +116,7 @@ pipeline {
 
   post {
     failure {
-      // Deploy fail zala tar auto-rollback
+      
       sh '''
         kubectl -n ${NAMESPACE} rollout undo deployment/web-app || true
       '''
